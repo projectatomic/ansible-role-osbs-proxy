@@ -1,0 +1,2 @@
+---
+osbs_proxy_docker_network: 172.17.42.1/16

@@ -1,0 +1,85 @@
+ServerName {{ ansible_fqdn }}
+ProxyRequests Off
+Listen {{ osbs_proxy_port }}
+
+{% if osbs_proxy_debug %}
+## debugging
+# DumpIOInput On
+# DumpIOOutput On
+LogLevel Debug
+# LogLevel dumpio:trace7
+{% endif %}
+
+<VirtualHost *:{{ osbs_proxy_port }}>
+    DocumentRoot /var/www/html
+
+    SSLEngine on
+    SSLCertificateFile {{ osbs_proxy_ssl_cert_file }}
+    SSLCertificateKeyFile {{ osbs_proxy_ssl_key_file }}
+
+    SSLProxyEngine On
+{% if osbs_proxy_ssl_client_ca_file is defined %}
+    SSLProxyCACertificateFile {{ osbs_proxy_ssl_client_ca_file }}
+{% endif %}
+{% if osbs_proxy_ssl_client_certkey_file is defined %}
+    SSLProxyMachineCertificateFile {{ osbs_proxy_ssl_client_certkey_file }}
+{% endif %}
+
+    SetEnv proxy-sendchunked 1
+    ProxyRequests Off
+    <Location "/">
+        ProxyPass {{ osbs_proxy_dest_url }} connectiontimeout=30 timeout=3600
+        ProxyPassReverse {{ osbs_proxy_dest_url }}
+    </Location>
+
+    # don't auth /oauth/token/request and /oauth/token/display
+    <ProxyMatch /oauth/token/.*>
+        Require all granted
+    </ProxyMatch>
+
+    # /oauth/authorize and /oauth/approve should be protected by Apache.
+    <ProxyMatch /oauth/a.*>
+        <If "-R '{{ ansible_default_ipv4.address }}' || -R '{{ osbs_proxy_docker_network }}'">
+            Require all granted
+            RequestHeader set X-Remote-User {{ ansible_hostname }}
+        </If>
+{% for w in osbs_proxy_ip_whitelist %}
+        <ElseIf "-R '{{ w.subnet }}'">
+            Require all granted
+            RequestHeader set X-Remote-User {{ w.user }}
+        </ElseIf>
+{% endfor %}
+{% if osbs_proxy_type == 'kerberos' %}
+        <Else>
+            AuthType Kerberos
+            AuthName "{{ osbs_proxy_authname }}"
+            KrbMethodNegotiate on
+            KrbMethodK5Passwd {{ 'on' if osbs_proxy_kerberos_password_login else 'off' }}
+            KrbServiceName Any
+{% if osbs_proxy_kerberos_realm is defined %}
+            KrbAuthRealms {{ osbs_proxy_kerberos_realm }}
+{% endif %}
+            Krb5Keytab {{ osbs_proxy_kerberos_keytab_file }}
+            Require valid-user
+            RequestHeader set X-Remote-User %{REMOTE_USER}s
+        </Else>
+{% elif osbs_proxy_type == 'htpasswd' %}
+        <Else>
+            AuthType basic
+            AuthUserFile {{ osbs_proxy_htpasswd_file }}
+            AuthName "{{ osbs_proxy_authname }}"
+            Require valid-user
+            RequestHeader set X-Remote-User %{REMOTE_USER}s
+        </Else>
+{% endif %}
+        RequestHeader unset Authorization
+        RequestHeader unset WWW-Authenticate
+    </ProxyMatch>
+
+    # All other requests should use Bearer tokens.  These can only be verified by
+    # OpenShift so we need to let these requests pass through.
+    <ProxyMatch ^/oauth/>
+        SetEnvIfNoCase Authorization Bearer passthrough
+        Require env passthrough
+    </ProxyMatch>
+</VirtualHost>

@@ -1,0 +1,75 @@
+---
+- name: check playbook configuration
+  assert:
+    that: osbs_proxy_type == 'htpasswd' or osbs_proxy_type == 'kerberos'
+
+- name: ensure required packages are installed
+  yum: name={{ item }} state=present
+  with_items:
+  # httpd
+  - httpd
+  - mod_ssl
+  # selinux
+  - policycoreutils-python
+
+- include: kerberos.yml
+  when: osbs_proxy_type == 'kerberos'
+
+- include: htpasswd.yml
+  when: osbs_proxy_type == 'htpasswd'
+
+- name: generate self-signed certificate
+  command: >
+    openssl req -new -nodes -x509
+    -subj "/C=CZ/ST=SelfSigned/L=SelfSigned/O=IT/CN={{ ansible_fqdn }}"
+    -days 3650
+    -keyout {{ osbs_proxy_ssl_key_file }}
+    -out {{ osbs_proxy_ssl_cert_file }}
+    -extensions v3_ca
+  args:
+    creates: "{{ osbs_proxy_ssl_cert_file }}"
+  when: osbs_proxy_ssl_generate_selfsigned
+  notify:
+  - restart httpd
+
+# TODO: The private key is world readable after it is generated but before this task finishes.
+# We should use umask/private directory to protect it.
+- name: set permissions on private key
+  file:
+    path: "{{ osbs_proxy_ssl_key_file }}"
+    state: file
+    owner: "{{ osbs_proxy_secrets_owner }}"
+    group: "{{ osbs_proxy_secrets_group }}"
+    mode: "{{ osbs_proxy_secrets_perms }}"
+
+- name: set permissions on client cert+key
+  file:
+    path: "{{ osbs_proxy_ssl_client_certkey_file }}"
+    state: file
+    owner: "{{ osbs_proxy_secrets_owner }}"
+    group: "{{ osbs_proxy_secrets_group }}"
+    mode: "{{ osbs_proxy_secrets_perms }}"
+  when: osbs_proxy_ssl_client_certkey_file is defined
+
+- name: configure httpd
+  template: src=httpd-openshift_proxy.conf.j2 dest={{ osbs_proxy_httpd_conf_path }}
+  notify:
+  - restart httpd
+
+- name: allow proxy port in selinux
+  shell: semanage port -a -t http_port_t -p tcp {{ osbs_proxy_port }}
+  register: semanage_result
+  failed_when: "semanage_result.rc != 0 and 'already defined' not in semanage_result.stderr"
+  changed_when: "'already defined' not in semanage_result.stderr"
+
+# Permanent rules aren't applied immediately. Starting with ansible 1.9,
+# this ugliness can be replaced with permanent=true immediate=true.
+- name: open required ports in the firewall
+  firewalld: port={{ osbs_proxy_port }}/tcp state=enabled permanent={{ item }}
+  with_items:
+  - true
+  - false
+  when: osbs_proxy_manage_firewalld
+
+- name: ensure httpd is running
+  service: name=httpd state=started enabled=yes
