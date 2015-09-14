@@ -6,7 +6,7 @@ galaxy_info:
   company: Red Hat
   issue_tracker_url: https://github.com/projectatomic/ansible-osbs/issues
   license: BSD
-  min_ansible_version: 1.2
+  min_ansible_version: 1.9
   platforms:
   - name: EL
     versions:

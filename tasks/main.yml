@@ -62,13 +62,12 @@
   failed_when: "semanage_result.rc != 0 and 'already defined' not in semanage_result.stderr"
   changed_when: "'already defined' not in semanage_result.stderr"
 
-# Permanent rules aren't applied immediately. Starting with ansible 1.9,
-# this ugliness can be replaced with permanent=true immediate=true.
 - name: open required ports in the firewall
-  firewalld: port={{ osbs_proxy_port }}/tcp state=enabled permanent={{ item }}
-  with_items:
-  - true
-  - false
+  firewalld:
+    port: "{{ osbs_proxy_port }}/tcp"
+    state: enabled
+    permanent: true
+    immediate: true
   when: osbs_proxy_manage_firewalld
 
 - name: ensure httpd is running
