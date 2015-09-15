@@ -120,8 +120,6 @@ Simple htpasswd authentication for development:
         - role: osbs-proxy
           osbs_proxy_type: htpasswd
           osbs_proxy_ssl_generate_selfsigned: true
-          osbs_proxy_ssl_client_certkey_file: /etc/httpd/openshift_proxy_certkey.crt
-          osbs_proxy_ssl_client_ca_file: /etc/openshift/master/ca.crt
           osbs_proxy_htpasswd_users:
             - user: test
               password: test
@@ -135,8 +133,6 @@ Example kerberos setup:
           osbs_proxy_type: kerberos
           osbs_proxy_ssl_cert_file: /etc/fqdn.example.com.crt
           osbs_proxy_ssl_key_file: /etc/fqdn.example.com.key
-          osbs_proxy_ssl_client_certkey_file: /etc/httpd/openshift_proxy_certkey.crt
-          osbs_proxy_ssl_client_ca_file: /etc/openshift/master/ca.crt
           osbs_proxy_kerberos_keytab_file: /etc/HTTP-FQDN.EXAMPLE.COM.keytab
           osbs_proxy_kerberos_realm: EXAMPLE.COM
           osbs_proxy_ip_whitelist:
