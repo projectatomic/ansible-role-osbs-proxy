@@ -41,6 +41,7 @@
     owner: "{{ osbs_proxy_secrets_owner }}"
     group: "{{ osbs_proxy_secrets_group }}"
     mode: "{{ osbs_proxy_secrets_perms }}"
+    setype: "{{ osbs_proxy_secrets_setype }}"
 
 - name: set permissions on client cert+key
   file:
@@ -49,6 +50,7 @@
     owner: "{{ osbs_proxy_secrets_owner }}"
     group: "{{ osbs_proxy_secrets_group }}"
     mode: "{{ osbs_proxy_secrets_perms }}"
+    setype: "{{ osbs_proxy_secrets_setype }}"
   when: osbs_proxy_ssl_client_certkey_file is defined
 
 - name: configure httpd

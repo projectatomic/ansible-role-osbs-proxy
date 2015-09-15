@@ -38,6 +38,7 @@ osbs_proxy_authname: OpenShift Authentication
 osbs_proxy_secrets_owner: apache
 osbs_proxy_secrets_group: root
 osbs_proxy_secrets_perms: "0600"
+osbs_proxy_secrets_setype: httpd_config_t
 
 # Manually assign openshift user account to an IP or IP range.
 #osbs_proxy_ip_whitelist:
