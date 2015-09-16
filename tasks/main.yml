@@ -70,7 +70,7 @@
     state: enabled
     permanent: true
     immediate: true
-  when: osbs_proxy_manage_firewalld
+  when: osbs_manage_firewalld
 
 - name: ensure httpd is running
   service: name=httpd state=started enabled=yes

@@ -101,7 +101,7 @@ Extra verbose httpd logs?
 
 Set to false if you don't use firewalld or do not want the playbook to modify it.
 
-    osbs_proxy_manage_firewalld: true
+    osbs_manage_firewalld: true
 
 Dependencies
 ------------
