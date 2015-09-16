@@ -22,7 +22,7 @@ osbs_proxy_httpd_conf_path: /etc/httpd/conf.d/openshift_proxy.conf
 # Authentication type:
 # htpasswd - uses .htpasswd file
 # kerberos - uses kerberos
-osbs_proxy_type: kerberos
+osbs_proxy_type: htpasswd
 
 # Proxy will listen on this port.
 osbs_proxy_port: 9443
