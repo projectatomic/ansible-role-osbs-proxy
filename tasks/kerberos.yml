@@ -6,3 +6,4 @@
     owner: "{{ osbs_proxy_secrets_owner }}"
     group: "{{ osbs_proxy_secrets_group }}"
     mode: "{{ osbs_proxy_secrets_perms }}"
+    setype: "{{ osbs_proxy_secrets_setype }}"
