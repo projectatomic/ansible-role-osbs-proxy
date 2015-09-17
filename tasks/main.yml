@@ -29,6 +29,7 @@
   args:
     creates: "{{ osbs_proxy_ssl_cert_file }}"
   when: osbs_proxy_ssl_generate_selfsigned
+  register: selfsigned_result
   notify:
   - restart httpd
 
@@ -42,6 +43,7 @@
     group: "{{ osbs_proxy_secrets_group }}"
     mode: "{{ osbs_proxy_secrets_perms }}"
     setype: "{{ osbs_proxy_secrets_setype }}"
+  when: selfsigned_result is defined and selfsigned_result|changed
 
 - name: set permissions on client cert+key
   file:
