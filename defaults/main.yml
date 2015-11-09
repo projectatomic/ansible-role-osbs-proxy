@@ -10,11 +10,11 @@ osbs_proxy_ssl_key_file: /etc/pki/tls/private/{{ ansible_fqdn }}.key
 
 # Concatenated certificate and key used to autheticate to the proxied server.
 # If unset, SSL client authentication will not be performed.
-osbs_proxy_ssl_client_certkey_file: /etc/openshift/proxy_certkey.crt
+osbs_proxy_ssl_client_certkey_file: /etc/origin/proxy_certkey.crt
 
 # CA against which the certificate of the proxied server will be verified. If
 # unset, no verification takes place.
-osbs_proxy_ssl_client_ca_file: /etc/openshift/master/ca.crt
+osbs_proxy_ssl_client_ca_file: /etc/origin/master/ca.crt
 
 # Path to the apache configuration snippet.
 osbs_proxy_httpd_conf_path: /etc/httpd/conf.d/openshift_proxy.conf
