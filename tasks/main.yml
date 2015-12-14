@@ -4,24 +4,13 @@
     that: osbs_proxy_type == 'htpasswd' or osbs_proxy_type == 'kerberos'
 
 - name: ensure required packages are installed
-  yum: name={{ item }} state=present
+  action: "{{ ansible_pkg_mgr }} name={{ item }} state=present"
   with_items:
   # httpd
   - httpd
   - mod_ssl
   # selinux
   - policycoreutils-python
-  when: ansible_pkg_mgr == "yum"
-
-- name: ensure required packages are installed
-  dnf: name={{ item }} state=present
-  with_items:
-  # httpd
-  - httpd
-  - mod_ssl
-  # selinux
-  - policycoreutils-python
-  when: ansible_pkg_mgr == "dnf"
 
 - include: kerberos.yml
   when: osbs_proxy_type == 'kerberos'
