@@ -1,11 +1,6 @@
 ---
 - name: install mod_auth_kerb
-  yum: name=mod_auth_kerb state=present
-  when: ansible_pkg_mgr == "yum"
-
-- name: install mod_auth_kerb
-  dnf: name=mod_auth_kerb state=present
-  when: ansible_pkg_mgr == "dnf"
+  action: "{{ ansible_pkg_mgr }} name=mod_auth_kerb state=present"
 
 - name: set permissions on kerberos keytab
   file:
