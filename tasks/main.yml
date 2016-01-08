@@ -61,7 +61,7 @@
   - restart httpd
 
 - name: allow proxy port in selinux
-  shell: semanage port -a -t http_port_t -p tcp {{ osbs_proxy_port }}
+  shell: /usr/sbin/semanage port -a -t http_port_t -p tcp {{ osbs_proxy_port }}
   register: semanage_result
   failed_when: "semanage_result.rc != 0 and 'already defined' not in semanage_result.stderr"
   changed_when: "'already defined' not in semanage_result.stderr"
